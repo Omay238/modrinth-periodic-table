@@ -46,25 +46,37 @@
 			let periodicTableDiv = document.getElementById('periodic-table');
 			
 			function fetchData(cellDiv, elementName) {
-				fetch('https://api.modrinth.com/v2/project/' + elementName).then(response => response.json()).then(data => {
-					if (!data.error) {
-						cellDiv.classList.add("valid");
-						if (data["project_type"] === "mod") {
-							cellDiv.style.backgroundColor = "lightgreen";
-						} else if (data["project_type"] === "shader") {
-							cellDiv.style.backgroundColor = "yellow";
-						} else if (data["project_type"] === "resourcepack") {
-							cellDiv.style.backgroundColor = "saddlebrown";
-						} else {
-							cellDiv.style.backgroundColor = "khaki";
+				let storedData = localStorage.getItem(elementName);
+				if (storedData) {
+					let data = JSON.parse(storedData);
+					applyData(cellDiv, data);
+				} else {
+					fetch('https://api.modrinth.com/v2/project/' + elementName).then(response => response.json()).then(data => {
+						if (!data.error) {
+							localStorage.setItem(elementName, JSON.stringify(data));
+							applyData(cellDiv, data);
 						}
-						cellDiv.onclick = () => {
-							window.open('https://modrinth.com/mod/' + elementName, '_blank')
-						};
-					}
-				}).catch(error => {
-					console.error('Error:', error);
-				});
+					}).catch(error => {
+						console.error('Error:', error);
+					});
+				}
+			}
+			
+			function applyData(cellDiv, data) {
+				cellDiv.classList.add("valid");
+				if (data["project_type"] === "mod") {
+					cellDiv.style.backgroundColor = "lightgreen";
+				} else if (data["project_type"] === "shader") {
+					cellDiv.style.backgroundColor = "yellow";
+				} else
+				if (data["project_type"] === "resourcepack") {
+					cellDiv.style.backgroundColor = "saddlebrown";
+				} else {
+					cellDiv.style.backgroundColor = "khaki";
+				}
+				cellDiv.onclick = () => {
+					window.open('https://modrinth.com/mod/' + elementName, '_blank')
+				};
 			}
 			for (let i = 0; i < table.length; i++) {
 				let rowDiv = document.createElement('div');
